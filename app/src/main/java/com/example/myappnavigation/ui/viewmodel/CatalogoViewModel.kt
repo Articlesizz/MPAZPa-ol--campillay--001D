@@ -90,4 +90,37 @@ class CatalogoViewModel : ViewModel() {
     fun limpiarCarrito() {
         carritoList.clear()
     }
+
+    fun crearEquipo(context: Context, equipo: EquipoEntity) {
+        viewModelScope.launch {
+            val db = AppDatabase.getDatabase(context)
+            val repository = EquipoRepository(db.equipoDao())
+            repository.guardarEquipo(equipo)
+            val list = repository.obtenerTodosLosEquipos()
+            equiposList.clear()
+            equiposList.addAll(list)
+        }
+    }
+
+    fun actualizarEquipo(context: Context, equipo: EquipoEntity) {
+        viewModelScope.launch {
+            val db = AppDatabase.getDatabase(context)
+            val repository = EquipoRepository(db.equipoDao())
+            repository.actualizarEquipo(equipo)
+            val list = repository.obtenerTodosLosEquipos()
+            equiposList.clear()
+            equiposList.addAll(list)
+        }
+    }
+
+    fun eliminarEquipo(context: Context, id: Int) {
+        viewModelScope.launch {
+            val db = AppDatabase.getDatabase(context)
+            val repository = EquipoRepository(db.equipoDao())
+            repository.eliminarEquipo(id)
+            val list = repository.obtenerTodosLosEquipos()
+            equiposList.clear()
+            equiposList.addAll(list)
+        }
+    }
 }

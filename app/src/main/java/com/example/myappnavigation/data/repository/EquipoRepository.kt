@@ -11,10 +11,11 @@ class EquipoRepository(private val equipoDao: EquipoDao) {
             val response = RetrofitClient.equipoApi.getEquipos()
             if (response.isSuccessful && response.body() != null) {
                 val remoteList = response.body()!!
+                equipoDao.deleteAllEquipos()
                 if (remoteList.isNotEmpty()) {
                     equipoDao.insertEquipos(remoteList)
-                    return remoteList
                 }
+                return remoteList
             }
             equipoDao.getAllEquipos()
         } catch (e: Exception) {
@@ -34,6 +35,32 @@ class EquipoRepository(private val equipoDao: EquipoDao) {
             }
         } catch (e: Exception) {
             equipoDao.insertEquipo(equipo)
+            true
+        }
+    }
+
+    suspend fun actualizarEquipo(equipo: EquipoEntity): Boolean {
+        return try {
+            val response = RetrofitClient.equipoApi.actualizarEquipo(equipo.id, equipo)
+            if (response.isSuccessful && response.body() != null) {
+                equipoDao.updateEquipo(response.body()!!)
+            } else {
+                equipoDao.updateEquipo(equipo)
+            }
+            true
+        } catch (e: Exception) {
+            equipoDao.updateEquipo(equipo)
+            true
+        }
+    }
+
+    suspend fun eliminarEquipo(id: Int): Boolean {
+        return try {
+            RetrofitClient.equipoApi.eliminarEquipo(id)
+            equipoDao.deleteEquipoById(id)
+            true
+        } catch (e: Exception) {
+            equipoDao.deleteEquipoById(id)
             true
         }
     }

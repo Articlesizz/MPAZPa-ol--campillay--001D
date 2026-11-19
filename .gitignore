@@ -10,7 +10,5 @@
 .cxx
 local.properties
 
-# Firma release (no versionar)
+# Firma release (se incluye .jks y APK firmado en /release según pauta Evaluación Parcial 4)
 *.keystore
-*.jks
-keystore.properties

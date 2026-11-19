@@ -25,6 +25,12 @@ interface EquipoDao {
     @Update
     suspend fun updateEquipo(equipo: EquipoEntity)
 
+    @Query("DELETE FROM equipos WHERE id = :id")
+    suspend fun deleteEquipoById(id: Int)
+
+    @Query("DELETE FROM equipos")
+    suspend fun deleteAllEquipos()
+
     @Query("SELECT COUNT(*) FROM equipos")
     suspend fun getCount(): Int
 }

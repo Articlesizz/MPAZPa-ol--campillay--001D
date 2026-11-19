@@ -38,6 +38,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,7 +62,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myappnavigation.data.database.AppDatabase
 import com.example.myappnavigation.data.local.entity.EquipoEntity
 import com.example.myappnavigation.ui.theme.BeigeAccent
 import com.example.myappnavigation.ui.theme.CardBorder
@@ -69,9 +70,6 @@ import com.example.myappnavigation.ui.theme.NavyPrimary
 import com.example.myappnavigation.ui.theme.StatusAcceptedBg
 import com.example.myappnavigation.ui.theme.StatusAcceptedText
 import com.example.myappnavigation.ui.viewmodel.CatalogoViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Composable
 fun InventarioAdminScreen(
@@ -81,6 +79,7 @@ fun InventarioAdminScreen(
 ) {
     val context = LocalContext.current
     var showAddDialog by remember { mutableStateOf(false) }
+    var equipoAEditar by remember { mutableStateOf<EquipoEntity?>(null) }
     var linternaEncendida by remember { mutableStateOf(false) }
     val nivelBateria = remember { NativeResources.obtenerNivelBateria(context) }
 
@@ -89,6 +88,12 @@ fun InventarioAdminScreen(
     var nuevaCategoria by remember { mutableStateOf("Notebooks") }
     var nuevoStock by remember { mutableStateOf("5") }
     var nuevaUbicacion by remember { mutableStateOf("Estante B-1") }
+
+    var editNombre by remember { mutableStateOf("") }
+    var editCategoria by remember { mutableStateOf("") }
+    var editStockTotal by remember { mutableStateOf("") }
+    var editStockDisponible by remember { mutableStateOf("") }
+    var editUbicacion by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         catalogoViewModel.cargarEquipos(context)
@@ -292,19 +297,42 @@ fun InventarioAdminScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Lista de Equipos
+            // Lista de Equipos filtrada por buscador
+            val equiposFiltrados = catalogoViewModel.equiposList.filter { eq ->
+                val q = catalogoViewModel.searchQuery.trim()
+                q.isEmpty() ||
+                    eq.nombre.contains(q, ignoreCase = true) ||
+                    eq.codigo.contains(q, ignoreCase = true) ||
+                    eq.ubicacionFisica.contains(q, ignoreCase = true)
+            }
+
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.weight(1f)
             ) {
-                items(catalogoViewModel.equiposList) { equipo ->
-                    InventarioCardItem(equipo = equipo)
+                items(equiposFiltrados) { equipo ->
+                    InventarioCardItem(
+                        equipo = equipo,
+                        onEditar = {
+                            equipoAEditar = equipo
+                            editNombre = equipo.nombre
+                            editCategoria = equipo.categoria
+                            editStockTotal = equipo.stockTotal.toString()
+                            editStockDisponible = equipo.stockDisponible.toString()
+                            editUbicacion = equipo.ubicacionFisica
+                        },
+                        onEliminar = {
+                            catalogoViewModel.eliminarEquipo(context, equipo.id)
+                            NativeResources.ejecutarVibracion(context, 180)
+                            Toast.makeText(context, "Equipo eliminado", Toast.LENGTH_SHORT).show()
+                        }
+                    )
                 }
             }
         }
     }
 
-    // DIÁLOGO PARA AGREGAR NUEVO EQUIPO
+    // DIÁLOGO PARA AGREGAR NUEVO EQUIPO (POST -> Microservicio + Room)
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
@@ -348,19 +376,17 @@ fun InventarioAdminScreen(
                     onClick = {
                         val stockInt = nuevoStock.toIntOrNull() ?: 5
                         val nuevo = EquipoEntity(
-                            codigo = if (nuevoCodigo.isBlank()) "EQU-00" + (1..99).random() else nuevoCodigo,
-                            nombre = if (nuevoNombre.isBlank()) "Nuevo Equipo" else nuevoNombre,
-                            categoria = nuevaCategoria,
+                            codigo = if (nuevoCodigo.isBlank()) "EQU-0" + (10..99).random() else nuevoCodigo.trim(),
+                            nombre = if (nuevoNombre.isBlank()) "Nuevo Equipo" else nuevoNombre.trim(),
+                            categoria = nuevaCategoria.trim(),
                             stockTotal = stockInt,
                             stockDisponible = stockInt,
                             estado = "Disponible",
-                            ubicacionFisica = nuevaUbicacion
+                            ubicacionFisica = nuevaUbicacion.trim()
                         )
-                        CoroutineScope(Dispatchers.IO).launch {
-                            val db = AppDatabase.getDatabase(context)
-                            db.equipoDao().insertEquipo(nuevo)
-                            catalogoViewModel.cargarEquipos(context)
-                        }
+                        catalogoViewModel.crearEquipo(context, nuevo)
+                        nuevoCodigo = ""
+                        nuevoNombre = ""
                         showAddDialog = false
                         Toast.makeText(context, "Equipo agregado exitosamente", Toast.LENGTH_SHORT).show()
                     },
@@ -378,10 +404,87 @@ fun InventarioAdminScreen(
             shape = RoundedCornerShape(20.dp)
         )
     }
+
+    // DIÁLOGO PARA EDITAR EQUIPO EXISTENTE (PUT -> Microservicio + Room)
+    if (equipoAEditar != null) {
+        AlertDialog(
+            onDismissRequest = { equipoAEditar = null },
+            title = { Text("Editar Equipo (${equipoAEditar?.codigo})", fontWeight = FontWeight.Bold, color = NavyPrimary) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = editNombre,
+                        onValueChange = { editNombre = it },
+                        label = { Text("Nombre del equipo") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = editCategoria,
+                        onValueChange = { editCategoria = it },
+                        label = { Text("Categoría") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = editStockTotal,
+                        onValueChange = { editStockTotal = it },
+                        label = { Text("Stock Total") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = editStockDisponible,
+                        onValueChange = { editStockDisponible = it },
+                        label = { Text("Stock Disponible") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = editUbicacion,
+                        onValueChange = { editUbicacion = it },
+                        label = { Text("Ubicación Física") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val base = equipoAEditar ?: return@Button
+                        val total = editStockTotal.toIntOrNull() ?: base.stockTotal
+                        val disp = (editStockDisponible.toIntOrNull() ?: base.stockDisponible).coerceIn(0, total)
+                        val actualizado = base.copy(
+                            nombre = editNombre.ifBlank { base.nombre },
+                            categoria = editCategoria.ifBlank { base.categoria },
+                            stockTotal = total,
+                            stockDisponible = disp,
+                            ubicacionFisica = editUbicacion.ifBlank { base.ubicacionFisica }
+                        )
+                        catalogoViewModel.actualizarEquipo(context, actualizado)
+                        equipoAEditar = null
+                        Toast.makeText(context, "Equipo actualizado", Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = NavyPrimary)
+                ) {
+                    Text("Actualizar", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { equipoAEditar = null }) {
+                    Text("Cancelar", color = Color.Gray)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
 }
 
 @Composable
-fun InventarioCardItem(equipo: EquipoEntity) {
+fun InventarioCardItem(
+    equipo: EquipoEntity,
+    onEditar: () -> Unit = {},
+    onEliminar: () -> Unit = {}
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -429,8 +532,29 @@ fun InventarioCardItem(equipo: EquipoEntity) {
                     }
                 }
 
-                IconButton(onClick = { }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = null, tint = Color.Gray)
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = Color.Gray)
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Editar equipo") },
+                            onClick = {
+                                showMenu = false
+                                onEditar()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Eliminar equipo", color = Color.Red) },
+                            onClick = {
+                                showMenu = false
+                                onEliminar()
+                            }
+                        )
+                    }
                 }
             }
 

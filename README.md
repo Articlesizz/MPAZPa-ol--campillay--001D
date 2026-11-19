@@ -133,17 +133,19 @@ com.example.myappnavigation
 
 ---
 
-## 🔏 Generar el APK Firmado
+## 🔏 APK Firmado y Llave `.jks` (Evaluación Parcial 4)
 
-Las credenciales de firma **no se suben al repositorio**. Para compilar el release:
+Siguiendo las instrucciones de entrega de la **Evaluación Parcial 4**, el repositorio incluye el ejecutable firmado y la llave junto a su configuración lista para compilar:
 
-1. Copiar `keystore.properties.example` como `keystore.properties` en la raíz del proyecto.
-2. Completar las claves y dejar el archivo `.keystore` dentro de `app/`.
-3. Ejecutar:
-   ```bash
-   .\gradlew.bat assembleRelease
-   ```
-4. El APK queda en `app/build/outputs/apk/release/app-release.apk`.
+* **APK Firmado listo para instalar:** `release/MPAZ_Panol_Release_Signed.apk`
+* **Llave generada (`.jks`):** `app/mpaz_release.jks` (Alias: `mpaz_key`)
+* **Configuración de firma:** `keystore.properties` y bloque `signingConfigs` en `app/build.gradle.kts`
+
+Para recompilar el APK firmado desde línea de comandos:
+```bash
+.\gradlew.bat assembleRelease
+```
+El binario generado también queda en `app/build/outputs/apk/release/app-release.apk`.
 
 ---
 
