@@ -1,6 +1,7 @@
 package com.example.myappnavigation.data.remote
 
 import com.example.myappnavigation.data.remote.api.EquipoApiService
+import com.example.myappnavigation.data.remote.api.FeriadoApiService
 import com.example.myappnavigation.data.remote.api.SolicitudApiService
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -37,5 +38,20 @@ object RetrofitClient {
 
     val solicitudApi: SolicitudApiService by lazy {
         retrofit.create(SolicitudApiService::class.java)
+    }
+
+    // API externa pública (Nager.Date) para feriados de Chile
+    private const val FERIADOS_BASE_URL = "https://date.nager.at/"
+
+    private val retrofitFeriados: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(FERIADOS_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    val feriadoApi: FeriadoApiService by lazy {
+        retrofitFeriados.create(FeriadoApiService::class.java)
     }
 }
