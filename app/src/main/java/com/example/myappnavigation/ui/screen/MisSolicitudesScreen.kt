@@ -68,12 +68,14 @@ fun MisSolicitudesScreen(
     onNavigateToCarrito: () -> Unit,
     onLogout: () -> Unit = {},
     catalogoViewModel: CatalogoViewModel,
-    solicitudViewModel: SolicitudViewModel
+    solicitudViewModel: SolicitudViewModel,
+    userName: String = "María López",
+    userEmail: String = "m.lopez@escuela.cl"
 ) {
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        solicitudViewModel.cargarSolicitudesDocente(context, "m.lopez@escuela.cl")
+    LaunchedEffect(userEmail) {
+        solicitudViewModel.cargarSolicitudesDocente(context, userEmail)
     }
 
     Scaffold(
@@ -122,6 +124,7 @@ fun MisSolicitudesScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
+                    val iniciales = userName.split(" ").filter { it.isNotBlank() }.map { it.first().uppercase() }.take(2).joinToString("").ifEmpty { "US" }
                     Box(
                         modifier = Modifier
                             .size(38.dp)
@@ -131,7 +134,7 @@ fun MisSolicitudesScreen(
                             .clickable { onLogout() },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("ML", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = NavyPrimary)
+                        Text(iniciales, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = NavyPrimary)
                     }
 
                     IconButton(onClick = onLogout) {

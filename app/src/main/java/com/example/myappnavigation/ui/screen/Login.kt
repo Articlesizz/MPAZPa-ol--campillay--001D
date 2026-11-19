@@ -60,6 +60,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myappnavigation.data.local.entity.UsuarioEntity
 import com.example.myappnavigation.ui.theme.BeigeAccent
 import com.example.myappnavigation.ui.theme.BeigeAccentLight
 import com.example.myappnavigation.ui.theme.CardBorder
@@ -70,7 +71,7 @@ import com.example.myappnavigation.ui.viewmodel.LoginViewModel
 @Composable
 fun Login(
     onNavigateToRegister: () -> Unit,
-    onLoginSuccess: (rol: String) -> Unit,
+    onLoginSuccess: (user: UsuarioEntity) -> Unit,
     viewModel: LoginViewModel = viewModel()
 ) {
     val state = viewModel.uiState
@@ -336,9 +337,9 @@ fun Login(
                 Button(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        viewModel.onLoginClick(context) { rol ->
-                            Toast.makeText(context, "¡Bienvenido/a de nuevo!", Toast.LENGTH_SHORT).show()
-                            onLoginSuccess(rol)
+                        viewModel.onLoginClick(context) { user ->
+                            Toast.makeText(context, "¡Bienvenido/a ${user.name}!", Toast.LENGTH_SHORT).show()
+                            onLoginSuccess(user)
                         }
                     },
                     modifier = Modifier

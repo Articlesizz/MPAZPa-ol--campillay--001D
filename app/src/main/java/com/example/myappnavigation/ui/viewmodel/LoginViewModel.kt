@@ -7,12 +7,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myappnavigation.data.database.AppDatabase
+import com.example.myappnavigation.data.local.entity.UsuarioEntity
+import com.example.myappnavigation.data.repository.UsuarioRepository
 import com.example.myappnavigation.model.LoginModel
 import kotlinx.coroutines.launch
 
 class LoginViewModel : ViewModel() {
 
-    var selectedRol by mutableStateOf("DOCENTE") // "DOCENTE" o "ENCARGADO_TI"
+    var selectedRol by mutableStateOf("DOCENTE")
         private set
 
     var uiState by mutableStateOf(LoginModel(email = "m.lopez@escuela.cl", password = "123"))
@@ -41,7 +43,7 @@ class LoginViewModel : ViewModel() {
         errorMessage = null
     }
 
-    fun onLoginClick(context: Context, onSuccess: (rol: String) -> Unit) {
+    fun onLoginClick(context: Context, onSuccess: (user: UsuarioEntity) -> Unit) {
         val email = uiState.email
         val password = uiState.password
 
@@ -52,11 +54,12 @@ class LoginViewModel : ViewModel() {
 
         viewModelScope.launch {
             val db = AppDatabase.getDatabase(context)
-            val user = db.usuarioDao().getUserByEmail(email)
+            val repository = UsuarioRepository(db.usuarioDao())
+            val user = repository.autenticar(email, password)
 
-            if (user != null && user.password == password) {
+            if (user != null) {
                 errorMessage = null
-                onSuccess(user.rol) // Devuelve el rol del usuario autenticado
+                onSuccess(user)
             } else {
                 errorMessage = "Correo o contraseña incorrectos."
             }

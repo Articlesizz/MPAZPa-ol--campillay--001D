@@ -1,4 +1,5 @@
 package com.example.myappnavigation.ui.viewmodel
+
 import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -7,12 +8,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myappnavigation.data.database.AppDatabase
 import com.example.myappnavigation.data.local.entity.UsuarioEntity
+import com.example.myappnavigation.data.repository.UsuarioRepository
 import com.example.myappnavigation.model.RegisterModel
 import kotlinx.coroutines.launch
 
 class RegisterViewModel : ViewModel() {
     var uiState by mutableStateOf(RegisterModel())
         private set
+
     fun onNameChanged(name: String) { uiState = uiState.copy(name = name, errorMessage = null) }
     fun onEmailChanged(email: String) { uiState = uiState.copy(email = email, errorMessage = null) }
     fun onPasswordChanged(password: String) { uiState = uiState.copy(password = password, errorMessage = null) }
@@ -31,11 +34,11 @@ class RegisterViewModel : ViewModel() {
             return
         }
 
-        // método asíncronico en SQLite con Room
         viewModelScope.launch {
             val db = AppDatabase.getDatabase(context)
-            val existingUser = db.usuarioDao().getUserByEmail(state.email)
+            val repository = UsuarioRepository(db.usuarioDao())
 
+            val existingUser = repository.obtenerUsuarioPorEmail(state.email)
             if (existingUser != null) {
                 uiState = uiState.copy(errorMessage = "El correo ya está registrado.")
             } else {
@@ -44,7 +47,7 @@ class RegisterViewModel : ViewModel() {
                     email = state.email,
                     password = state.password
                 )
-                db.usuarioDao().registerUser(newUser)
+                repository.registrarUsuario(newUser)
                 uiState = uiState.copy(errorMessage = null)
                 onSuccess()
             }

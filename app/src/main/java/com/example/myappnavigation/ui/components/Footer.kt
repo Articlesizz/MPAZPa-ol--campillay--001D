@@ -15,9 +15,9 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun Footer(
-    copyrightText: String ="© 2026 App de Héroes. Todos los derechos reservados",
+    copyrightText: String = "© 2026 MPAZ Pañol. Todos los derechos reservados",
     backGroundColor: Color = Color(0xFF0B0B0B),
-    textColor:Color=Color.White
+    textColor: Color = Color.White
 ){
     Box(
         modifier = Modifier

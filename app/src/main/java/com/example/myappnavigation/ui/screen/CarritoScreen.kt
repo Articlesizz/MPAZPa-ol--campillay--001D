@@ -76,7 +76,9 @@ fun CarritoScreen(
     onNavigateToCatalogo: () -> Unit,
     onNavigateToMisSolicitudes: () -> Unit,
     catalogoViewModel: CatalogoViewModel,
-    solicitudViewModel: SolicitudViewModel
+    solicitudViewModel: SolicitudViewModel,
+    userName: String = "María López",
+    userEmail: String = "m.lopez@escuela.cl"
 ) {
     val context = LocalContext.current
     var expandedSala by remember { mutableStateOf(false) }
@@ -477,8 +479,8 @@ fun CarritoScreen(
                     val resumen = catalogoViewModel.carritoList.joinToString(", ") { "${it.cantidad} × ${it.equipo.nombre}" }
                     solicitudViewModel.enviarSolicitud(
                         context = context,
-                        docenteEmail = "m.lopez@escuela.cl",
-                        docenteNombre = "María López",
+                        docenteEmail = userEmail,
+                        docenteNombre = userName,
                         equiposResumen = resumen
                     ) {
                         catalogoViewModel.limpiarCarrito()

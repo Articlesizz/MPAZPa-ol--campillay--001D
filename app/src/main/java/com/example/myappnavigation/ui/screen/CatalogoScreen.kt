@@ -73,7 +73,8 @@ fun CatalogoScreen(
     onNavigateToCarrito: () -> Unit,
     onNavigateToMisSolicitudes: () -> Unit,
     onLogout: () -> Unit = {},
-    viewModel: CatalogoViewModel
+    viewModel: CatalogoViewModel,
+    userName: String = "María López"
 ) {
     val context = LocalContext.current
 
@@ -182,7 +183,7 @@ fun CatalogoScreen(
 
             // Saludo
             Text(
-                text = "Hola, María",
+                text = "Hola, ${userName.split(" ").firstOrNull() ?: userName}",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = NavyPrimary

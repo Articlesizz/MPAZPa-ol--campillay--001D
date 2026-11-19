@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myappnavigation.data.database.AppDatabase
 import com.example.myappnavigation.data.local.entity.EquipoEntity
+import com.example.myappnavigation.data.repository.EquipoRepository
 import kotlinx.coroutines.launch
 
 data class CarritoItem(
@@ -33,7 +34,8 @@ class CatalogoViewModel : ViewModel() {
     fun cargarEquipos(context: Context) {
         viewModelScope.launch {
             val db = AppDatabase.getDatabase(context)
-            val list = db.equipoDao().getAllEquipos()
+            val repository = EquipoRepository(db.equipoDao())
+            val list = repository.obtenerTodosLosEquipos()
             equiposList.clear()
             equiposList.addAll(list)
         }

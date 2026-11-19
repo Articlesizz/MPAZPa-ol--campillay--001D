@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myappnavigation.data.database.AppDatabase
 import com.example.myappnavigation.data.local.entity.SolicitudEntity
+import com.example.myappnavigation.data.repository.SolicitudRepository
 import kotlinx.coroutines.launch
 import java.util.Random
 
@@ -37,9 +38,8 @@ class SolicitudViewModel : ViewModel() {
     var motivoRechazo by mutableStateOf("")
 
     fun calcularAnticipacion(hora: String) {
-        // Validación lógica simple de anticipación de 3 horas
         val horaNum = hora.split(":").firstOrNull()?.toIntOrNull() ?: 14
-        val horaActualMock = 9 // Mock de las 09:00 AM
+        val horaActualMock = 9
         val diff = horaNum - horaActualMock
         horasAnticipacion = if (diff > 0) diff else 1
         cumpleAnticipacion = horasAnticipacion >= 3
@@ -72,7 +72,8 @@ class SolicitudViewModel : ViewModel() {
 
         viewModelScope.launch {
             val db = AppDatabase.getDatabase(context)
-            db.solicitudDao().insertSolicitud(nuevaSolicitud)
+            val repository = SolicitudRepository(db.solicitudDao())
+            repository.crearSolicitud(nuevaSolicitud)
             cargarSolicitudesDocente(context, docenteEmail)
             onSuccess()
         }
@@ -81,7 +82,8 @@ class SolicitudViewModel : ViewModel() {
     fun cargarSolicitudesDocente(context: Context, email: String) {
         viewModelScope.launch {
             val db = AppDatabase.getDatabase(context)
-            val list = db.solicitudDao().getSolicitudesByDocente(email)
+            val repository = SolicitudRepository(db.solicitudDao())
+            val list = repository.obtenerSolicitudesDocente(email)
             solicitudesDocente.clear()
             solicitudesDocente.addAll(list)
         }
@@ -90,7 +92,8 @@ class SolicitudViewModel : ViewModel() {
     fun cargarTodasLasSolicitudes(context: Context) {
         viewModelScope.launch {
             val db = AppDatabase.getDatabase(context)
-            val list = db.solicitudDao().getAllSolicitudes()
+            val repository = SolicitudRepository(db.solicitudDao())
+            val list = repository.obtenerTodasLasSolicitudes()
             todasLasSolicitudes.clear()
             todasLasSolicitudes.addAll(list)
         }
@@ -99,7 +102,8 @@ class SolicitudViewModel : ViewModel() {
     fun aprobarSolicitud(context: Context, solicitud: SolicitudEntity) {
         viewModelScope.launch {
             val db = AppDatabase.getDatabase(context)
-            db.solicitudDao().responderSolicitud(solicitud.id, "Aceptada", null)
+            val repository = SolicitudRepository(db.solicitudDao())
+            repository.responderSolicitud(solicitud.id, "Aceptada", null)
             cargarTodasLasSolicitudes(context)
         }
     }
@@ -122,7 +126,8 @@ class SolicitudViewModel : ViewModel() {
 
         viewModelScope.launch {
             val db = AppDatabase.getDatabase(context)
-            db.solicitudDao().responderSolicitud(sol.id, "Rechazada", motivoRechazo)
+            val repository = SolicitudRepository(db.solicitudDao())
+            repository.responderSolicitud(sol.id, "Rechazada", motivoRechazo)
             cerrarDialogoRechazo()
             cargarTodasLasSolicitudes(context)
         }
