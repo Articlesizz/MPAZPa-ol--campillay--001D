@@ -158,7 +158,15 @@ El binario generado también queda en `app/build/outputs/apk/release/app-release
 * `plan_pruebas_unitarias.md` — plan de pruebas.
 * `supabase_init.sql` — creación de tablas y datos de prueba en PostgreSQL.
 
----
+--- capturas del apk firmado
+<img width="400" height="688" alt="image" src="https://github.com/user-attachments/assets/3fa61554-12fd-400a-8e07-bb988602ba87" />
+<img width="425" height="755" alt="image" src="https://github.com/user-attachments/assets/13c18ecb-7c0b-4084-97f6-121ef2df37bc" />
+<img width="342" height="658" alt="image" src="https://github.com/user-attachments/assets/60688d2d-e12b-4d49-8ca0-0afe4966bfaf" />
+<img width="413" height="745" alt="image" src="https://github.com/user-attachments/assets/962d763e-53be-4b36-b5bf-6d4f79ae5721" />
+<img width="379" height="644" alt="image" src="https://github.com/user-attachments/assets/d4e93c6e-7c23-4ace-83dc-f0bd9a336459" />
+
+
+
 
 ## 🚀 Cómo Ejecutar
 
