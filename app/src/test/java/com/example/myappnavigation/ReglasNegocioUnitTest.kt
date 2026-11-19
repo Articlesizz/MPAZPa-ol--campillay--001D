@@ -174,12 +174,12 @@ class ReglasNegocioUnitTest {
 
         viewModel.onNameChanged("Profesor Juan")
         viewModel.onEmailChanged("juan@escuela.cl")
-        viewModel.onPasswordChanged("clave123")
+        viewModel.onPasswordChanged("Clave1!")
         viewModel.onConfirmPasswordChanged("claveDistinta")
 
         // La función valida contraseñas antes de interactuar con la BD
         // Verificamos el estado
-        assertEquals("clave123", viewModel.uiState.password)
+        assertEquals("Clave1!", viewModel.uiState.password)
         assertEquals("claveDistinta", viewModel.uiState.confirmPassword)
     }
 

@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -24,10 +26,10 @@ android {
 
     // Las credenciales de firma se leen desde keystore.properties (no se versiona).
     // Ver plantilla: keystore.properties.example
-    val keystoreProps = java.util.Properties()
+    val keystoreProps = Properties()
     val keystorePropsFile = rootProject.file("keystore.properties")
     if (keystorePropsFile.exists()) {
-        keystorePropsFile.inputStream().use { keystoreProps.load(it) }
+        keystorePropsFile.inputStream().use { stream -> keystoreProps.load(stream) }
     }
 
     signingConfigs {

@@ -35,7 +35,9 @@ object Validaciones {
         password.isBlank() -> "La contraseña es obligatoria."
         password.length < PASSWORD_MIN -> "Debe tener al menos $PASSWORD_MIN caracteres."
         !password.any { it.isLetter() } || !password.any { it.isDigit() } ->
-            "Debe combinar letras y números."
+            "Debe ser alfanumérica (combinar letras y números)."
+        !password.any { !it.isLetterOrDigit() } ->
+            "Debe incluir al menos un carácter especial (ej. !@#$)."
         else -> null
     }
 

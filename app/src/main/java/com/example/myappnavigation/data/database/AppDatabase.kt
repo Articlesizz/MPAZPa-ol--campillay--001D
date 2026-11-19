@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [UsuarioEntity::class, EquipoEntity::class, SolicitudEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -59,14 +59,14 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         private suspend fun populateInitialData(db: AppDatabase) {
-            // 1. Usuarios iniciales
+            // 1. Usuarios iniciales (ambos roles con contraseña alfanumérica de al menos 6 caracteres y un símbolo)
             val userDao = db.usuarioDao()
             if (userDao.getUserByEmail("m.lopez@escuela.cl") == null) {
                 userDao.registerUser(
                     UsuarioEntity(
                         name = "María López",
                         email = "m.lopez@escuela.cl",
-                        password = "123",
+                        password = "Lopez1!",
                         rol = "DOCENTE"
                     )
                 )
@@ -76,7 +76,7 @@ abstract class AppDatabase : RoomDatabase() {
                     UsuarioEntity(
                         name = "Encargado TI",
                         email = "admin@escuela.cl",
-                        password = "123",
+                        password = "Admin1!",
                         rol = "ENCARGADO_TI"
                     )
                 )

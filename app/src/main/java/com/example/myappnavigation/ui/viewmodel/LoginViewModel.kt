@@ -18,7 +18,7 @@ class LoginViewModel : ViewModel() {
     var selectedRol by mutableStateOf("DOCENTE")
         private set
 
-    var uiState by mutableStateOf(LoginModel(email = "m.lopez@escuela.cl", password = "123"))
+    var uiState by mutableStateOf(LoginModel(email = "m.lopez@escuela.cl", password = "Lopez1!"))
         private set
 
     var errorMessage by mutableStateOf<String?>(null)
@@ -27,9 +27,9 @@ class LoginViewModel : ViewModel() {
     fun onRolSelected(rol: String) {
         selectedRol = rol
         if (rol == "DOCENTE") {
-            uiState = uiState.copy(email = "m.lopez@escuela.cl", emailError = null, passwordError = null)
+            uiState = uiState.copy(email = "m.lopez@escuela.cl", password = "Lopez1!", emailError = null, passwordError = null)
         } else {
-            uiState = uiState.copy(email = "admin@escuela.cl", emailError = null, passwordError = null)
+            uiState = uiState.copy(email = "admin@escuela.cl", password = "Admin1!", emailError = null, passwordError = null)
         }
         errorMessage = null
     }

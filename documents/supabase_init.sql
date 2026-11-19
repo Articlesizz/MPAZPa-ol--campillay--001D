@@ -51,8 +51,8 @@ CREATE TABLE IF NOT EXISTS solicitudes (
 
 -- Usuarios Iniciales
 INSERT INTO usuarios (name, email, password, rol) VALUES
-('María López', 'm.lopez@escuela.cl', '123', 'DOCENTE'),
-('Encargado TI', 'admin@escuela.cl', '123', 'ENCARGADO_TI')
+('María López', 'm.lopez@escuela.cl', 'Lopez1!', 'DOCENTE'),
+('Encargado TI', 'admin@escuela.cl', 'Admin1!', 'ENCARGADO_TI')
 ON CONFLICT (email) DO NOTHING;
 
 -- Equipos Iniciales

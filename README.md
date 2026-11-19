@@ -87,10 +87,10 @@ La base SQLite (`mpaz_panol_database.db`) se precarga con usuarios, equipos y so
 
 | Rol | Correo | Contraseña |
 | :--- | :--- | :--- |
-| 🧑‍🏫 Docente | `m.lopez@escuela.cl` | `123` |
-| 🛠️ Encargado de TI | `admin@escuela.cl` | `123` |
+| 🧑‍🏫 Docente | `m.lopez@escuela.cl` | `Lopez1!` |
+| 🛠️ Encargado de TI | `admin@escuela.cl` | `Admin1!` |
 
-> Los usuarios nuevos creados desde **Registro** deben tener una contraseña de al menos 6 caracteres que combine letras y números.
+> Las contraseñas de ambos roles deben ser alfanuméricas de al menos 6 caracteres e incluir un carácter especial/símbolo (ej. `!@#$`).
 
 ---
 

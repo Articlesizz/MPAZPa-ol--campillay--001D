@@ -39,22 +39,27 @@ class ValidacionesUnitTest {
 
     @Test
     fun passwordRegistro_corta_retornaError() {
-        assertNotNull(Validaciones.validarPasswordRegistro("a1"))
+        assertNotNull(Validaciones.validarPasswordRegistro("a1!"))
     }
 
     @Test
     fun passwordRegistro_soloLetras_retornaError() {
-        assertEquals("Debe combinar letras y números.", Validaciones.validarPasswordRegistro("abcdefg"))
+        assertEquals("Debe ser alfanumérica (combinar letras y números).", Validaciones.validarPasswordRegistro("abcdefg!"))
+    }
+
+    @Test
+    fun passwordRegistro_sinCaracterEspecial_retornaError() {
+        assertEquals("Debe incluir al menos un carácter especial (ej. !@#$).", Validaciones.validarPasswordRegistro("clave123"))
     }
 
     @Test
     fun passwordRegistro_valida_noRetornaError() {
-        assertNull(Validaciones.validarPasswordRegistro("clave123"))
+        assertNull(Validaciones.validarPasswordRegistro("Clave1!"))
     }
 
     @Test
     fun confirmacion_distinta_retornaNoCoinciden() {
-        assertEquals("Las contraseñas no coinciden.", Validaciones.validarConfirmacion("clave123", "clave124"))
+        assertEquals("Las contraseñas no coinciden.", Validaciones.validarConfirmacion("Clave1!", "Clave1?"))
     }
 
     @Test
