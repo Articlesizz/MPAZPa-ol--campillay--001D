@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -44,6 +46,7 @@ fun Register(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -54,6 +57,10 @@ fun Register(
             //nombre
             OutlinedTextField(
                 value = state.name,
+                isError = state.nameError != null,
+                supportingText = if (state.nameError != null) {
+                    { Text(state.nameError ?: "") }
+                } else null,
                 onValueChange = { viewModel.onNameChanged(it) },
                 label = { Text("Nombre Completo") },
                 singleLine = true,
@@ -63,6 +70,10 @@ fun Register(
             // correo
             OutlinedTextField(
                 value = state.email,
+                isError = state.emailError != null,
+                supportingText = if (state.emailError != null) {
+                    { Text(state.emailError ?: "") }
+                } else null,
                 onValueChange = { viewModel.onEmailChanged(it) },
                 label = { Text("Correo Electrónico") },
                 singleLine = true,
@@ -73,6 +84,10 @@ fun Register(
             // contraseña
             OutlinedTextField(
                 value = state.password,
+                isError = state.passwordError != null,
+                supportingText = if (state.passwordError != null) {
+                    { Text(state.passwordError ?: "") }
+                } else null,
                 onValueChange = { viewModel.onPasswordChanged(it) },
                 label = { Text("Contraseña") },
                 singleLine = true,
@@ -84,6 +99,10 @@ fun Register(
             // repetir contraseña
             OutlinedTextField(
                 value = state.confirmPassword,
+                isError = state.confirmPasswordError != null,
+                supportingText = if (state.confirmPasswordError != null) {
+                    { Text(state.confirmPasswordError ?: "") }
+                } else null,
                 onValueChange = { viewModel.onConfirmPasswordChanged(it) },
                 label = { Text("Repetir Contraseña") },
                 singleLine = true,
@@ -91,7 +110,7 @@ fun Register(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth()
             )
-            // muestra mensaje de error si no coinciden las claves o si el correo ya existe
+            // Mensaje general (errores de base de datos)
             if (state.errorMessage != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(

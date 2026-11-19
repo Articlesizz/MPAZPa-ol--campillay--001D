@@ -256,6 +256,10 @@ fun Login(
                     value = state.email,
                     onValueChange = { viewModel.onEmailChanged(it) },
                     singleLine = true,
+                    isError = state.emailError != null,
+                    supportingText = if (state.emailError != null) {
+                        { Text(state.emailError ?: "", fontSize = 12.sp) }
+                    } else null,
                     trailingIcon = {
                         Icon(
                             imageVector = Icons.Default.Email,
@@ -288,6 +292,10 @@ fun Login(
                     value = state.password,
                     onValueChange = { viewModel.onPasswordChanged(it) },
                     singleLine = true,
+                    isError = state.passwordError != null,
+                    supportingText = if (state.passwordError != null) {
+                        { Text(state.passwordError ?: "", fontSize = 12.sp) }
+                    } else null,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
