@@ -60,6 +60,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myappnavigation.data.local.entity.UsuarioEntity
 import com.example.myappnavigation.ui.theme.BeigeAccent
 import com.example.myappnavigation.ui.theme.BeigeAccentLight
 import com.example.myappnavigation.ui.theme.CardBorder
@@ -70,7 +71,7 @@ import com.example.myappnavigation.ui.viewmodel.LoginViewModel
 @Composable
 fun Login(
     onNavigateToRegister: () -> Unit,
-    onLoginSuccess: (rol: String) -> Unit,
+    onLoginSuccess: (user: UsuarioEntity) -> Unit,
     viewModel: LoginViewModel = viewModel()
 ) {
     val state = viewModel.uiState
@@ -255,6 +256,10 @@ fun Login(
                     value = state.email,
                     onValueChange = { viewModel.onEmailChanged(it) },
                     singleLine = true,
+                    isError = state.emailError != null,
+                    supportingText = if (state.emailError != null) {
+                        { Text(state.emailError ?: "", fontSize = 12.sp) }
+                    } else null,
                     trailingIcon = {
                         Icon(
                             imageVector = Icons.Default.Email,
@@ -287,6 +292,10 @@ fun Login(
                     value = state.password,
                     onValueChange = { viewModel.onPasswordChanged(it) },
                     singleLine = true,
+                    isError = state.passwordError != null,
+                    supportingText = if (state.passwordError != null) {
+                        { Text(state.passwordError ?: "", fontSize = 12.sp) }
+                    } else null,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -336,9 +345,9 @@ fun Login(
                 Button(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        viewModel.onLoginClick(context) { rol ->
-                            Toast.makeText(context, "¡Bienvenido/a de nuevo!", Toast.LENGTH_SHORT).show()
-                            onLoginSuccess(rol)
+                        viewModel.onLoginClick(context) { user ->
+                            Toast.makeText(context, "¡Bienvenido/a ${user.name}!", Toast.LENGTH_SHORT).show()
+                            onLoginSuccess(user)
                         }
                     },
                     modifier = Modifier

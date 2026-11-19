@@ -76,7 +76,9 @@ fun CarritoScreen(
     onNavigateToCatalogo: () -> Unit,
     onNavigateToMisSolicitudes: () -> Unit,
     catalogoViewModel: CatalogoViewModel,
-    solicitudViewModel: SolicitudViewModel
+    solicitudViewModel: SolicitudViewModel,
+    userName: String = "María López",
+    userEmail: String = "m.lopez@escuela.cl"
 ) {
     val context = LocalContext.current
     var expandedSala by remember { mutableStateOf(false) }
@@ -336,7 +338,11 @@ fun CarritoScreen(
             Text("Fecha de uso *", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = NavyPrimary)
             OutlinedTextField(
                 value = solicitudViewModel.fechaUso,
-                onValueChange = { solicitudViewModel.fechaUso = it },
+                onValueChange = { solicitudViewModel.onFechaChanged(it) },
+                isError = solicitudViewModel.fechaError != null,
+                supportingText = if (solicitudViewModel.fechaError != null) {
+                    { Text(solicitudViewModel.fechaError ?: "", fontSize = 11.sp) }
+                } else null,
                 trailingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null, tint = Color.Gray) },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
@@ -357,10 +363,11 @@ fun CarritoScreen(
                     Text("Hora de inicio *", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = NavyPrimary)
                     OutlinedTextField(
                         value = solicitudViewModel.horaInicio,
-                        onValueChange = {
-                            solicitudViewModel.horaInicio = it
-                            solicitudViewModel.calcularAnticipacion(it)
-                        },
+                        onValueChange = { solicitudViewModel.onHoraInicioChanged(it) },
+                        isError = solicitudViewModel.horaInicioError != null,
+                        supportingText = if (solicitudViewModel.horaInicioError != null) {
+                            { Text(solicitudViewModel.horaInicioError ?: "", fontSize = 11.sp) }
+                        } else null,
                         trailingIcon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = Color.Gray) },
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
@@ -378,7 +385,11 @@ fun CarritoScreen(
                     Text("Hora estimada de devolución *", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = NavyPrimary)
                     OutlinedTextField(
                         value = solicitudViewModel.horaDevolucion,
-                        onValueChange = { solicitudViewModel.horaDevolucion = it },
+                        onValueChange = { solicitudViewModel.onHoraDevolucionChanged(it) },
+                        isError = solicitudViewModel.horaDevolucionError != null,
+                        supportingText = if (solicitudViewModel.horaDevolucionError != null) {
+                            { Text(solicitudViewModel.horaDevolucionError ?: "", fontSize = 11.sp) }
+                        } else null,
                         trailingIcon = { Icon(Icons.Default.Schedule, contentDescription = null, tint = Color.Gray) },
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
@@ -469,6 +480,10 @@ fun CarritoScreen(
                         Toast.makeText(context, "Agrega al menos un equipo al carrito", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
+                    if (!solicitudViewModel.validarFormulario()) {
+                        Toast.makeText(context, "Revisa los campos marcados en rojo", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
                     if (!solicitudViewModel.cumpleAnticipacion) {
                         Toast.makeText(context, "No cumple la regla de anticipación de 3 horas", Toast.LENGTH_LONG).show()
                         return@Button
@@ -477,8 +492,8 @@ fun CarritoScreen(
                     val resumen = catalogoViewModel.carritoList.joinToString(", ") { "${it.cantidad} × ${it.equipo.nombre}" }
                     solicitudViewModel.enviarSolicitud(
                         context = context,
-                        docenteEmail = "m.lopez@escuela.cl",
-                        docenteNombre = "María López",
+                        docenteEmail = userEmail,
+                        docenteNombre = userName,
                         equiposResumen = resumen
                     ) {
                         catalogoViewModel.limpiarCarrito()

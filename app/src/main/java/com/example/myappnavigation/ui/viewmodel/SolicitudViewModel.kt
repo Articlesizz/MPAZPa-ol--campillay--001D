@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myappnavigation.data.database.AppDatabase
 import com.example.myappnavigation.data.local.entity.SolicitudEntity
+import com.example.myappnavigation.data.repository.SolicitudRepository
+import com.example.myappnavigation.model.Validaciones
 import kotlinx.coroutines.launch
 import java.util.Random
 
@@ -18,6 +20,14 @@ class SolicitudViewModel : ViewModel() {
     var fechaUso by mutableStateOf("21 de octubre de 2026")
     var horaInicio by mutableStateOf("14:00")
     var horaDevolucion by mutableStateOf("16:00")
+
+    // Errores por campo del formulario de solicitud
+    var fechaError by mutableStateOf<String?>(null)
+        private set
+    var horaInicioError by mutableStateOf<String?>(null)
+        private set
+    var horaDevolucionError by mutableStateOf<String?>(null)
+        private set
 
     var horasAnticipacion by mutableStateOf(5)
     var cumpleAnticipacion by mutableStateOf(true)
@@ -37,12 +47,38 @@ class SolicitudViewModel : ViewModel() {
     var motivoRechazo by mutableStateOf("")
 
     fun calcularAnticipacion(hora: String) {
-        // Validación lógica simple de anticipación de 3 horas
         val horaNum = hora.split(":").firstOrNull()?.toIntOrNull() ?: 14
-        val horaActualMock = 9 // Mock de las 09:00 AM
+        val horaActualMock = 9
         val diff = horaNum - horaActualMock
         horasAnticipacion = if (diff > 0) diff else 1
         cumpleAnticipacion = horasAnticipacion >= 3
+    }
+
+    fun onFechaChanged(valor: String) {
+        fechaUso = valor
+        fechaError = Validaciones.validarFecha(valor)
+    }
+
+    fun onHoraInicioChanged(valor: String) {
+        horaInicio = valor
+        horaInicioError = Validaciones.validarHora(valor)
+        if (horaInicioError == null) calcularAnticipacion(valor)
+        if (horaDevolucionError != null) {
+            horaDevolucionError = Validaciones.validarHoraDevolucion(valor, horaDevolucion)
+        }
+    }
+
+    fun onHoraDevolucionChanged(valor: String) {
+        horaDevolucion = valor
+        horaDevolucionError = Validaciones.validarHoraDevolucion(horaInicio, valor)
+    }
+
+    /** Valida todos los campos del formulario. Devuelve true si se puede enviar. */
+    fun validarFormulario(): Boolean {
+        fechaError = Validaciones.validarFecha(fechaUso)
+        horaInicioError = Validaciones.validarHora(horaInicio)
+        horaDevolucionError = Validaciones.validarHoraDevolucion(horaInicio, horaDevolucion)
+        return fechaError == null && horaInicioError == null && horaDevolucionError == null
     }
 
     fun enviarSolicitud(
@@ -52,7 +88,7 @@ class SolicitudViewModel : ViewModel() {
         equiposResumen: String,
         onSuccess: () -> Unit
     ) {
-        if (!cumpleAnticipacion) return
+        if (!validarFormulario() || !cumpleAnticipacion) return
 
         val nuevoCodigo = "MP-0" + (100 + Random().nextInt(800))
         val nuevaSolicitud = SolicitudEntity(
@@ -72,7 +108,8 @@ class SolicitudViewModel : ViewModel() {
 
         viewModelScope.launch {
             val db = AppDatabase.getDatabase(context)
-            db.solicitudDao().insertSolicitud(nuevaSolicitud)
+            val repository = SolicitudRepository(db.solicitudDao())
+            repository.crearSolicitud(nuevaSolicitud)
             cargarSolicitudesDocente(context, docenteEmail)
             onSuccess()
         }
@@ -81,7 +118,8 @@ class SolicitudViewModel : ViewModel() {
     fun cargarSolicitudesDocente(context: Context, email: String) {
         viewModelScope.launch {
             val db = AppDatabase.getDatabase(context)
-            val list = db.solicitudDao().getSolicitudesByDocente(email)
+            val repository = SolicitudRepository(db.solicitudDao())
+            val list = repository.obtenerSolicitudesDocente(email)
             solicitudesDocente.clear()
             solicitudesDocente.addAll(list)
         }
@@ -90,7 +128,8 @@ class SolicitudViewModel : ViewModel() {
     fun cargarTodasLasSolicitudes(context: Context) {
         viewModelScope.launch {
             val db = AppDatabase.getDatabase(context)
-            val list = db.solicitudDao().getAllSolicitudes()
+            val repository = SolicitudRepository(db.solicitudDao())
+            val list = repository.obtenerTodasLasSolicitudes()
             todasLasSolicitudes.clear()
             todasLasSolicitudes.addAll(list)
         }
@@ -99,7 +138,8 @@ class SolicitudViewModel : ViewModel() {
     fun aprobarSolicitud(context: Context, solicitud: SolicitudEntity) {
         viewModelScope.launch {
             val db = AppDatabase.getDatabase(context)
-            db.solicitudDao().responderSolicitud(solicitud.id, "Aceptada", null)
+            val repository = SolicitudRepository(db.solicitudDao())
+            repository.responderSolicitud(solicitud.id, "Aceptada", null)
             cargarTodasLasSolicitudes(context)
         }
     }
@@ -122,7 +162,8 @@ class SolicitudViewModel : ViewModel() {
 
         viewModelScope.launch {
             val db = AppDatabase.getDatabase(context)
-            db.solicitudDao().responderSolicitud(sol.id, "Rechazada", motivoRechazo)
+            val repository = SolicitudRepository(db.solicitudDao())
+            repository.responderSolicitud(sol.id, "Rechazada", motivoRechazo)
             cerrarDialogoRechazo()
             cargarTodasLasSolicitudes(context)
         }

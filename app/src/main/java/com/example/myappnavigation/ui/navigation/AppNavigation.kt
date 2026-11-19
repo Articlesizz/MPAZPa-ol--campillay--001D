@@ -1,6 +1,10 @@
 package com.example.myappnavigation.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -29,6 +33,10 @@ object Routes {
 fun AppNavigation() {
     val navController = rememberNavController()
 
+    // Estado del usuario autenticado
+    var currentUserName by remember { mutableStateOf("María López") }
+    var currentUserEmail by remember { mutableStateOf("m.lopez@escuela.cl") }
+
     // ViewModels compartidos
     val catalogoViewModel: CatalogoViewModel = viewModel()
     val solicitudViewModel: SolicitudViewModel = viewModel()
@@ -42,8 +50,10 @@ fun AppNavigation() {
                 onNavigateToRegister = {
                     navController.navigate(Routes.REGISTER)
                 },
-                onLoginSuccess = { rol ->
-                    if (rol == "ENCARGADO_TI") {
+                onLoginSuccess = { user ->
+                    currentUserName = user.name
+                    currentUserEmail = user.email
+                    if (user.rol == "ENCARGADO_TI") {
                         navController.navigate(Routes.CONSOLA_ADMIN) {
                             popUpTo(Routes.LOGIN) { inclusive = true }
                         }
@@ -76,7 +86,8 @@ fun AppNavigation() {
                         popUpTo(0) { inclusive = true }
                     }
                 },
-                viewModel = catalogoViewModel
+                viewModel = catalogoViewModel,
+                userName = currentUserName
             )
         }
 
@@ -85,7 +96,9 @@ fun AppNavigation() {
                 onNavigateToCatalogo = { navController.navigate(Routes.CATALOGO) },
                 onNavigateToMisSolicitudes = { navController.navigate(Routes.MIS_SOLICITUDES) },
                 catalogoViewModel = catalogoViewModel,
-                solicitudViewModel = solicitudViewModel
+                solicitudViewModel = solicitudViewModel,
+                userName = currentUserName,
+                userEmail = currentUserEmail
             )
         }
 
@@ -99,7 +112,9 @@ fun AppNavigation() {
                     }
                 },
                 catalogoViewModel = catalogoViewModel,
-                solicitudViewModel = solicitudViewModel
+                solicitudViewModel = solicitudViewModel,
+                userName = currentUserName,
+                userEmail = currentUserEmail
             )
         }
 

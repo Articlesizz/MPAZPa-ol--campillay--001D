@@ -1,7 +1,10 @@
 package com.example.myappnavigation.ui.screen
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,6 +29,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Refresh
@@ -73,12 +77,14 @@ fun CatalogoScreen(
     onNavigateToCarrito: () -> Unit,
     onNavigateToMisSolicitudes: () -> Unit,
     onLogout: () -> Unit = {},
-    viewModel: CatalogoViewModel
+    viewModel: CatalogoViewModel,
+    userName: String = "María López"
 ) {
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.cargarEquipos(context)
+        viewModel.cargarProximoFeriado()
     }
 
     val categorias = listOf("Todos", "Notebooks", "Robótica", "Proyectores", "Redes")
@@ -182,7 +188,7 @@ fun CatalogoScreen(
 
             // Saludo
             Text(
-                text = "Hola, María",
+                text = "Hola, ${userName.split(" ").firstOrNull() ?: userName}",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = NavyPrimary
@@ -193,6 +199,43 @@ fun CatalogoScreen(
                 color = Color.Gray,
                 modifier = Modifier.padding(top = 2.dp, bottom = 12.dp)
             )
+
+            // Aviso de próximo feriado (API externa Nager.Date)
+            val feriado = viewModel.proximoFeriado
+            AnimatedVisibility(
+                visible = feriado != null,
+                enter = fadeIn() + expandVertically()
+            ) {
+                Card(
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                        .border(1.dp, BeigeAccent, RoundedCornerShape(14.dp))
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        Icon(Icons.Default.Event, contentDescription = null, tint = NavyPrimary, modifier = Modifier.size(22.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "Próximo feriado: ${feriado?.fechaLegible() ?: ""}",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = NavyPrimary
+                            )
+                            Text(
+                                text = "${feriado?.localName ?: ""} · El pañol no atiende ese día",
+                                fontSize = 11.sp,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                }
+            }
 
             // Buscador
             OutlinedTextField(
